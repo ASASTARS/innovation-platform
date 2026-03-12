@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.NewsMapper">
+
+    <resultMap id="NewsResultMap" type="com.abajin.innovation.entity.News">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="authorId" column="author_id"/>
+        <result property="authorName" column="author_name"/>
+        <result property="coverImage" column="cover_image"/>
+        <result property="summary" column="summary"/>
+        <result property="content" column="content"/>
+        <result property="source" column="source"/>
+        <result property="attachments" column="attachments"/>
+        <result property="relatedActivityId" column="related_activity_id"/>
+        <result property="relatedActivityTitle" column="related_activity_title"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="isTop" column="is_top"/>
+        <result property="status" column="status"/>
+        <result property="approvalStatus" column="approval_status"/>
+        <result property="reviewerId" column="reviewer_id"/>
+        <result property="reviewerName" column="reviewer_name"/>
+        <result property="reviewComment" column="review_comment"/>
+        <result property="reviewTime" column="review_time"/>
+        <result property="publishTime" column="publish_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="NewsResultMap">
+        SELECT n.*,
+               nc.name AS category_name,
+               u1.real_name AS reviewer_name,
+               a.title AS related_activity_title
+        FROM news n
+        LEFT JOIN news_category nc ON n.category_id = nc.id
+        LEFT JOIN user u1 ON n.reviewer_id = u1.id
+        LEFT JOIN activity a ON n.related_activity_id = a.id
+        WHERE n.id = #{id}
+    </select>
+
+    <select id="selectPage" resultMap="NewsResultMap">
+        SELECT n.*,
+               nc.name AS category_name,
+               u1.real_name AS reviewer_name,
+               a.title AS related_activity_title
+        FROM news n
+        LEFT JOIN news_category nc ON n.category_id = nc.id
+        LEFT JOIN user u1 ON n.reviewer_id = u1.id
+        LEFT JOIN activity a ON n.related_activity_id = a.id
+        <where>
+            <if test="title != null and title != ''">
+                AND n.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND n.status = #{status}
+            </if>
+            <if test="approvalStatus != null and approvalStatus != ''">
+                AND n.approval_status = #{approvalStatus}
+            </if>
+            <if test="categoryId != null">
+                AND n.category_id = #{categoryId}
+            </if>
+            <if test="authorId != null">
+                AND n.author_id = #{authorId}
+            </if>
+        </where>
+        ORDER BY n.is_top DESC, n.publish_time DESC, n.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM news n
+        <where>
+            <if test="title != null and title != ''">
+                AND n.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND n.status = #{status}
+            </if>
+            <if test="approvalStatus != null and approvalStatus != ''">
+                AND n.approval_status = #{approvalStatus}
+            </if>
+            <if test="categoryId != null">
+                AND n.category_id = #{categoryId}
+            </if>
+            <if test="authorId != null">
+                AND n.author_id = #{authorId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO news (
+            title, category_id, author_id, author_name, cover_image,
+            summary, content, source, attachments, related_activity_id,
+            view_count, like_count, is_top, status, approval_status,
+            create_time, update_time
+        ) VALUES (
+            #{title}, #{categoryId}, #{authorId}, #{authorName}, #{coverImage},
+            #{summary}, #{content}, #{source}, #{attachments}, #{relatedActivityId},
+            #{viewCount}, #{likeCount}, #{isTop}, #{status}, #{approvalStatus},
+            #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE news
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="coverImage != null">cover_image = #{coverImage},</if>
+            <if test="summary != null">summary = #{summary},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="source != null">source = #{source},</if>
+            <if test="attachments != null">attachments = #{attachments},</if>
+            <if test="relatedActivityId != null">related_activity_id = #{relatedActivityId},</if>
+            <if test="isTop != null">is_top = #{isTop},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="approvalStatus != null">approval_status = #{approvalStatus},</if>
+            <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
+            <if test="reviewComment != null">review_comment = #{reviewComment},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            <if test="publishTime != null">publish_time = #{publishTime},</if>
+            update_time = #{updateTime}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM news WHERE id = #{id}
+    </delete>
+
+    <update id="incrementViewCount">
+        UPDATE news SET view_count = view_count + 1 WHERE id = #{id}
+    </update>
+
+</mapper>

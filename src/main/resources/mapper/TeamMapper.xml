@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.TeamMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.Team">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="team_type" property="teamType"/>
+        <result column="description" property="description"/>
+        <result column="leader_id" property="leaderId"/>
+        <result column="leader_name" property="leaderName"/>
+        <result column="leader_student_id" property="leaderStudentId"/>
+        <result column="college_name" property="collegeName"/>
+        <result column="member_count" property="memberCount"/>
+        <result column="recruiting" property="recruiting"/>
+        <result column="is_public" property="isPublic"/>
+        <result column="recruitment_requirement" property="recruitmentRequirement"/>
+        <result column="honors" property="honors"/>
+        <result column="tags" property="tags"/>
+        <result column="instructor_name" property="instructorName"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM team WHERE id = #{id}
+    </select>
+
+    <select id="selectByLeaderId" resultMap="BaseResultMap">
+        SELECT * FROM team WHERE leader_id = #{leaderId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM team ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO team (name, team_type, description, leader_id, leader_name, leader_student_id, college_name, member_count, recruiting, is_public, recruitment_requirement, honors, tags, instructor_name, create_time, update_time)
+        VALUES (#{name}, #{teamType}, #{description}, #{leaderId}, #{leaderName}, #{leaderStudentId}, #{collegeName}, #{memberCount}, #{recruiting}, #{isPublic}, #{recruitmentRequirement}, #{honors}, #{tags}, #{instructorName}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="update">
+        UPDATE team
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="teamType != null">team_type = #{teamType},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="leaderId != null">leader_id = #{leaderId},</if>
+            <if test="leaderName != null">leader_name = #{leaderName},</if>
+            <if test="leaderStudentId != null">leader_student_id = #{leaderStudentId},</if>
+            <if test="collegeName != null">college_name = #{collegeName},</if>
+            <if test="memberCount != null">member_count = #{memberCount},</if>
+            <if test="recruiting != null">recruiting = #{recruiting},</if>
+            <if test="isPublic != null">is_public = #{isPublic},</if>
+            <if test="recruitmentRequirement != null">recruitment_requirement = #{recruitmentRequirement},</if>
+            <if test="honors != null">honors = #{honors},</if>
+            <if test="tags != null">tags = #{tags},</if>
+            <if test="instructorName != null">instructor_name = #{instructorName},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM team WHERE id = #{id}
+    </delete>
+</mapper>

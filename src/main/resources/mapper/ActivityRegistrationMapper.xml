@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.ActivityRegistrationMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.ActivityRegistration">
+        <id column="id" property="id"/>
+        <result column="activity_id" property="activityId"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="contact_phone" property="contactPhone"/>
+        <result column="email" property="email"/>
+        <result column="remark" property="remark"/>
+        <result column="status" property="status"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="reviewer_id" property="reviewerId"/>
+        <result column="review_time" property="reviewTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 包含活动信息的 ResultMap -->
+    <resultMap id="RegistrationWithActivityMap" type="com.abajin.innovation.entity.ActivityRegistration">
+        <id column="id" property="id"/>
+        <result column="activity_id" property="activityId"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="contact_phone" property="contactPhone"/>
+        <result column="email" property="email"/>
+        <result column="remark" property="remark"/>
+        <result column="status" property="status"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="reviewer_id" property="reviewerId"/>
+        <result column="review_time" property="reviewTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <!-- 活动信息（通过反射设置到扩展字段） -->
+        <result column="activity_title" property="activityTitle"/>
+        <result column="activity_start_time" property="activityStartTime"/>
+        <result column="activity_location" property="activityLocation"/>
+        <result column="activity_status" property="activityStatus"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM activity_registration WHERE id = #{id}
+    </select>
+
+    <select id="selectByActivityId" resultMap="BaseResultMap">
+        SELECT * FROM activity_registration WHERE activity_id = #{activityId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM activity_registration WHERE user_id = #{userId} ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询用户报名列表（包含活动信息） -->
+    <select id="selectByUserIdWithActivity" resultMap="RegistrationWithActivityMap">
+        SELECT 
+            ar.*,
+            a.title AS activity_title,
+            a.start_time AS activity_start_time,
+            a.location AS activity_location,
+            a.status AS activity_status
+        FROM activity_registration ar
+        LEFT JOIN activity a ON ar.activity_id = a.id
+        WHERE ar.user_id = #{userId}
+        ORDER BY ar.create_time DESC
+    </select>
+
+    <select id="selectByActivityIdAndUserId" resultMap="BaseResultMap">
+        SELECT * FROM activity_registration WHERE activity_id = #{activityId} AND user_id = #{userId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO activity_registration (
+            activity_id, user_id, user_name, contact_phone, email, remark,
+            status, approval_status, create_time, update_time
+        ) VALUES (
+            #{activityId}, #{userId}, #{userName}, #{contactPhone}, #{email}, #{remark},
+            #{status}, #{approvalStatus}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE activity_registration
+        <set>
+            <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="approvalStatus != null">approval_status = #{approvalStatus},</if>
+            <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM activity_registration WHERE id = #{id}
+    </delete>
+</mapper>

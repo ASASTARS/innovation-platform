@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.FundApplicationMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.FundApplication">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="fund_type_id" property="fundTypeId"/>
+        <result column="applicant_id" property="applicantId"/>
+        <result column="applicant_name" property="applicantName"/>
+        <result column="applicant_type" property="applicantType"/>
+        <result column="applicant_entity_id" property="applicantEntityId"/>
+        <result column="project_id" property="projectId"/>
+        <result column="team_id" property="teamId"/>
+        <result column="application_amount" property="applicationAmount"/>
+        <result column="application_reason" property="applicationReason"/>
+        <result column="application_content" property="applicationContent"/>
+        <result column="expected_outcomes" property="expectedOutcomes"/>
+        <result column="attachments" property="attachments"/>
+        <result column="status" property="status"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="reviewer_id" property="reviewerId"/>
+        <result column="review_comment" property="reviewComment"/>
+        <result column="review_time" property="reviewTime"/>
+        <result column="approved_amount" property="approvedAmount"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM fund_application WHERE id = #{id}
+    </select>
+
+    <select id="selectByApplicantId" resultMap="BaseResultMap">
+        SELECT * FROM fund_application WHERE applicant_id = #{applicantId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByApplicantIdAndApprovalStatus" resultMap="BaseResultMap">
+        SELECT * FROM fund_application
+        WHERE applicant_id = #{applicantId}
+          AND approval_status = #{approvalStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByProjectId" resultMap="BaseResultMap">
+        SELECT * FROM fund_application WHERE project_id = #{projectId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM fund_application WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByApprovalStatus" resultMap="BaseResultMap">
+        SELECT * FROM fund_application WHERE approval_status = #{approvalStatus} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStatusAndApprovalStatus" resultMap="BaseResultMap">
+        SELECT * FROM fund_application
+        WHERE status = #{status}
+          AND approval_status = #{approvalStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM fund_application ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO fund_application (
+            title, fund_type_id, applicant_id, applicant_name, applicant_type, applicant_entity_id,
+            project_id, team_id, application_amount, application_reason, application_content,
+            expected_outcomes, attachments, status, approval_status, create_time, update_time
+        ) VALUES (
+            #{title}, #{fundTypeId}, #{applicantId}, #{applicantName}, #{applicantType}, #{applicantEntityId},
+            #{projectId}, #{teamId}, #{applicationAmount}, #{applicationReason}, #{applicationContent},
+            #{expectedOutcomes}, #{attachments}, #{status}, #{approvalStatus}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE fund_application
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="fundTypeId != null">fund_type_id = #{fundTypeId},</if>
+            <if test="applicationAmount != null">application_amount = #{applicationAmount},</if>
+            <if test="applicationReason != null">application_reason = #{applicationReason},</if>
+            <if test="applicationContent != null">application_content = #{applicationContent},</if>
+            <if test="expectedOutcomes != null">expected_outcomes = #{expectedOutcomes},</if>
+            <if test="attachments != null">attachments = #{attachments},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="approvalStatus != null">approval_status = #{approvalStatus},</if>
+            <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
+            <if test="reviewComment != null">review_comment = #{reviewComment},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            <if test="approvedAmount != null">approved_amount = #{approvedAmount},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM fund_application WHERE id = #{id}
+    </delete>
+</mapper>

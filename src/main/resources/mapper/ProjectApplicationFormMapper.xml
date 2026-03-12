@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.ProjectApplicationFormMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.ProjectApplicationForm">
+        <id column="id" property="id"/>
+        <result column="instructor_name" property="instructorName"/>
+        <result column="leader_name" property="leaderName"/>
+        <result column="leader_phone" property="leaderPhone"/>
+        <result column="competition_registered" property="competitionRegistered"/>
+        <result column="competition_name" property="competitionName"/>
+        <result column="project_name" property="projectName"/>
+        <result column="project_introduction" property="projectIntroduction"/>
+        <result column="project_achievements" property="projectAchievements"/>
+        <result column="expected_outcomes" property="expectedOutcomes"/>
+        <result column="leader_declaration" property="leaderDeclaration"/>
+        <result column="leader_signature" property="leaderSignature"/>
+        <result column="leader_sign_date" property="leaderSignDate"/>
+        <result column="member_declaration" property="memberDeclaration"/>
+        <result column="member_signature" property="memberSignature"/>
+        <result column="member_sign_date" property="memberSignDate"/>
+        <result column="instructor_opinion" property="instructorOpinion"/>
+        <result column="instructor_signature" property="instructorSignature"/>
+        <result column="instructor_sign_date" property="instructorSignDate"/>
+        <result column="status" property="status"/>
+        <result column="applicant_id" property="applicantId"/>
+        <result column="applicant_name" property="applicantName"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM project_application_form WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM project_application_form ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByApplicantId" resultMap="BaseResultMap">
+        SELECT * FROM project_application_form WHERE applicant_id = #{applicantId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM project_application_form WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO project_application_form (
+            instructor_name, leader_name, leader_phone, competition_registered, competition_name,
+            project_name, project_introduction, project_achievements, expected_outcomes,
+            leader_declaration, leader_signature, leader_sign_date,
+            member_declaration, member_signature, member_sign_date,
+            instructor_opinion, instructor_signature, instructor_sign_date,
+            status, applicant_id, applicant_name, create_time, update_time
+        ) VALUES (
+            #{instructorName}, #{leaderName}, #{leaderPhone}, #{competitionRegistered}, #{competitionName},
+            #{projectName}, #{projectIntroduction}, #{projectAchievements}, #{expectedOutcomes},
+            #{leaderDeclaration}, #{leaderSignature}, #{leaderSignDate},
+            #{memberDeclaration}, #{memberSignature}, #{memberSignDate},
+            #{instructorOpinion}, #{instructorSignature}, #{instructorSignDate},
+            #{status}, #{applicantId}, #{applicantName}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE project_application_form SET
+            instructor_name = #{instructorName},
+            leader_name = #{leaderName},
+            leader_phone = #{leaderPhone},
+            competition_registered = #{competitionRegistered},
+            competition_name = #{competitionName},
+            project_name = #{projectName},
+            project_introduction = #{projectIntroduction},
+            project_achievements = #{projectAchievements},
+            expected_outcomes = #{expectedOutcomes},
+            leader_declaration = #{leaderDeclaration},
+            leader_signature = #{leaderSignature},
+            leader_sign_date = #{leaderSignDate},
+            member_declaration = #{memberDeclaration},
+            member_signature = #{memberSignature},
+            member_sign_date = #{memberSignDate},
+            instructor_opinion = #{instructorOpinion},
+            instructor_signature = #{instructorSignature},
+            instructor_sign_date = #{instructorSignDate},
+            status = #{status},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM project_application_form WHERE id = #{id}
+    </delete>
+</mapper>

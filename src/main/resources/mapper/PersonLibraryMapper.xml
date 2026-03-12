@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.PersonLibraryMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.PersonLibrary">
+        <id column="id" property="id"/>
+        <result column="person_type_id" property="personTypeId"/>
+        <result column="person_type_name" property="personTypeName"/>
+        <result column="user_id" property="userId"/>
+        <result column="name" property="name"/>
+        <result column="gender" property="gender"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="avatar" property="avatar"/>
+        <result column="title" property="title"/>
+        <result column="organization" property="organization"/>
+        <result column="position" property="position"/>
+        <result column="research_direction" property="researchDirection"/>
+        <result column="achievements" property="achievements"/>
+        <result column="introduction" property="introduction"/>
+        <result column="expertise_areas" property="expertiseAreas"/>
+        <result column="status" property="status"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="reviewer_id" property="reviewerId"/>
+        <result column="review_time" property="reviewTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT pl.*, pt.name AS person_type_name
+        FROM person_library pl
+        LEFT JOIN person_type pt ON pl.person_type_id = pt.id
+        <where>
+            <if test="personTypeId != null">
+                AND pl.person_type_id = #{personTypeId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (pl.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR pl.organization LIKE CONCAT('%', #{keyword}, '%')
+                     OR pl.research_direction LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            AND pl.approval_status = 'APPROVED'
+        </where>
+        ORDER BY pl.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM person_library pl
+        <where>
+            <if test="personTypeId != null">
+                AND pl.person_type_id = #{personTypeId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (pl.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR pl.organization LIKE CONCAT('%', #{keyword}, '%')
+                     OR pl.research_direction LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            AND pl.approval_status = 'APPROVED'
+        </where>
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT pl.*, pt.name AS person_type_name
+        FROM person_library pl
+        LEFT JOIN person_type pt ON pl.person_type_id = pt.id
+        WHERE pl.id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO person_library (
+            person_type_id, user_id, name, gender, phone, email, avatar, title, organization,
+            position, research_direction, achievements, introduction, expertise_areas, status, approval_status,
+            create_time, update_time
+        ) VALUES (
+            #{personTypeId}, #{userId}, #{name}, #{gender}, #{phone}, #{email}, #{avatar}, #{title}, #{organization},
+            #{position}, #{researchDirection}, #{achievements}, #{introduction}, #{expertiseAreas}, #{status}, #{approvalStatus},
+            NOW(), NOW()
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE person_library
+        <set>
+            <if test="personTypeId != null">person_type_id = #{personTypeId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="organization != null">organization = #{organization},</if>
+            <if test="position != null">position = #{position},</if>
+            <if test="researchDirection != null">research_direction = #{researchDirection},</if>
+            <if test="achievements != null">achievements = #{achievements},</if>
+            <if test="introduction != null">introduction = #{introduction},</if>
+            <if test="expertiseAreas != null">expertise_areas = #{expertiseAreas},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM person_library WHERE id = #{id}
+    </delete>
+</mapper>

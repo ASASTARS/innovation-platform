@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.ActivityMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.Activity">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="activity_type_id" property="activityTypeId"/>
+        <result column="activity_series" property="activitySeries"/>
+        <result column="activity_type_other" property="activityTypeOther"/>
+        <result column="organizer_id" property="organizerId"/>
+        <result column="organizer_name" property="organizerName"/>
+        <result column="organizer_type" property="organizerType"/>
+        <result column="organizer_entity_id" property="organizerEntityId"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="space_id" property="spaceId"/>
+        <result column="location" property="location"/>
+        <result column="description" property="description"/>
+        <result column="content" property="content"/>
+        <result column="registration_link" property="registrationLink"/>
+        <result column="qr_code_url" property="qrCodeUrl"/>
+        <result column="host_unit_id" property="hostUnitId"/>
+        <result column="co_organizer_ids" property="coOrganizerIds"/>
+        <result column="other_units" property="otherUnits"/>
+        <result column="poster_url" property="posterUrl"/>
+        <result column="max_participants" property="maxParticipants"/>
+        <result column="registration_deadline" property="registrationDeadline"/>
+        <result column="status" property="status"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="reviewer_id" property="reviewerId"/>
+        <result column="review_comment" property="reviewComment"/>
+        <result column="review_time" property="reviewTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM activity WHERE id = #{id}
+    </select>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM activity
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="approvalStatus != null and approvalStatus != ''">
+                AND approval_status = #{approvalStatus}
+            </if>
+            <if test="activityTypeId != null">
+                AND activity_type_id = #{activityTypeId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (title LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="selectPageVisibleToUser" resultMap="BaseResultMap">
+        SELECT * FROM activity
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="activityTypeId != null">
+                AND activity_type_id = #{activityTypeId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (title LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            AND (
+                approval_status = 'APPROVED'
+                OR organizer_id = #{viewerUserId}
+                OR id IN (SELECT activity_id FROM activity_registration WHERE user_id = #{viewerUserId})
+            )
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM activity
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="approvalStatus != null and approvalStatus != ''">
+                AND approval_status = #{approvalStatus}
+            </if>
+            <if test="activityTypeId != null">
+                AND activity_type_id = #{activityTypeId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (title LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="countVisibleToUser" resultType="int">
+        SELECT COUNT(*) FROM activity
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="activityTypeId != null">
+                AND activity_type_id = #{activityTypeId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (title LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            AND (
+                approval_status = 'APPROVED'
+                OR organizer_id = #{viewerUserId}
+                OR id IN (SELECT activity_id FROM activity_registration WHERE user_id = #{viewerUserId})
+            )
+        </where>
+    </select>
+
+    <select id="selectByOrganizerId" resultMap="BaseResultMap">
+        SELECT * FROM activity WHERE organizer_id = #{organizerId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM activity WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO activity (
+            title, activity_type_id, activity_series, activity_type_other, organizer_id, organizer_name, organizer_type, organizer_entity_id,
+            start_time, end_time, space_id, location, description, content, registration_link, qr_code_url, host_unit_id, co_organizer_ids, other_units, poster_url, max_participants, registration_deadline,
+            status, approval_status, create_time, update_time
+        ) VALUES (
+            #{title}, #{activityTypeId}, #{activitySeries}, #{activityTypeOther}, #{organizerId}, #{organizerName}, #{organizerType}, #{organizerEntityId},
+            #{startTime}, #{endTime}, #{spaceId}, #{location}, #{description}, #{content}, #{registrationLink}, #{qrCodeUrl}, #{hostUnitId}, #{coOrganizerIds}, #{otherUnits}, #{posterUrl}, #{maxParticipants}, #{registrationDeadline},
+            #{status}, #{approvalStatus}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE activity
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="activityTypeId != null">activity_type_id = #{activityTypeId},</if>
+            <if test="activitySeries != null">activity_series = #{activitySeries},</if>
+            <if test="activityTypeOther != null">activity_type_other = #{activityTypeOther},</if>
+            <if test="organizerName != null">organizer_name = #{organizerName},</if>
+            <if test="organizerType != null">organizer_type = #{organizerType},</if>
+            <if test="organizerEntityId != null">organizer_entity_id = #{organizerEntityId},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="spaceId != null">space_id = #{spaceId},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="registrationLink != null">registration_link = #{registrationLink},</if>
+            <if test="qrCodeUrl != null">qr_code_url = #{qrCodeUrl},</if>
+            <if test="hostUnitId != null">host_unit_id = #{hostUnitId},</if>
+            <if test="coOrganizerIds != null">co_organizer_ids = #{coOrganizerIds},</if>
+            <if test="otherUnits != null">other_units = #{otherUnits},</if>
+            <if test="posterUrl != null">poster_url = #{posterUrl},</if>
+            <if test="maxParticipants != null">max_participants = #{maxParticipants},</if>
+            <if test="registrationDeadline != null">registration_deadline = #{registrationDeadline},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="approvalStatus != null">approval_status = #{approvalStatus},</if>
+            <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
+            <if test="reviewComment != null">review_comment = #{reviewComment},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM activity WHERE id = #{id}
+    </delete>
+
+    <select id="selectBySpaceIdAndDateTimeOverlap" resultMap="BaseResultMap">
+        SELECT * FROM activity
+        WHERE space_id = #{spaceId}
+          AND status != 'CANCELLED'
+          AND start_time &lt; #{endDateTime}
+          AND end_time &gt; #{startDateTime}
+          <if test="excludeActivityId != null">
+              AND id != #{excludeActivityId}
+          </if>
+    </select>
+</mapper>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.InnovationTeamApplicationMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.InnovationTeamApplication">
+        <id column="id" property="id"/>
+        <result column="team_name" property="teamName"/>
+        <result column="cooperative_enterprise" property="cooperativeEnterprise"/>
+        <result column="applicant_student_id" property="applicantStudentId"/>
+        <result column="applicant_name" property="applicantName"/>
+        <result column="applicant_contact" property="applicantContact"/>
+        <result column="on_campus_mentor_name" property="onCampusMentorName"/>
+        <result column="on_campus_mentor_contact" property="onCampusMentorContact"/>
+        <result column="enterprise_mentor_name" property="enterpriseMentorName"/>
+        <result column="enterprise_mentor_contact" property="enterpriseMentorContact"/>
+        <result column="innovation_direction" property="innovationDirection"/>
+        <result column="positioning_and_ideas" property="positioningAndIdeas"/>
+        <result column="applicant_signature" property="applicantSignature"/>
+        <result column="applicant_sign_date" property="applicantSignDate"/>
+        <result column="on_campus_mentor_signature" property="onCampusMentorSignature"/>
+        <result column="on_campus_mentor_sign_date" property="onCampusMentorSignDate"/>
+        <result column="enterprise_mentor_signature" property="enterpriseMentorSignature"/>
+        <result column="enterprise_mentor_sign_date" property="enterpriseMentorSignDate"/>
+        <result column="status" property="status"/>
+        <result column="applicant_id" property="applicantId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM innovation_team_application WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM innovation_team_application ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByApplicantId" resultMap="BaseResultMap">
+        SELECT * FROM innovation_team_application WHERE applicant_id = #{applicantId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM innovation_team_application WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO innovation_team_application (
+            team_name, cooperative_enterprise, applicant_student_id, applicant_name, applicant_contact,
+            on_campus_mentor_name, on_campus_mentor_contact, enterprise_mentor_name, enterprise_mentor_contact,
+            innovation_direction, positioning_and_ideas,
+            applicant_signature, applicant_sign_date,
+            on_campus_mentor_signature, on_campus_mentor_sign_date,
+            enterprise_mentor_signature, enterprise_mentor_sign_date,
+            status, applicant_id, create_time, update_time
+        ) VALUES (
+            #{teamName}, #{cooperativeEnterprise}, #{applicantStudentId}, #{applicantName}, #{applicantContact},
+            #{onCampusMentorName}, #{onCampusMentorContact}, #{enterpriseMentorName}, #{enterpriseMentorContact},
+            #{innovationDirection}, #{positioningAndIdeas},
+            #{applicantSignature}, #{applicantSignDate},
+            #{onCampusMentorSignature}, #{onCampusMentorSignDate},
+            #{enterpriseMentorSignature}, #{enterpriseMentorSignDate},
+            #{status}, #{applicantId}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE innovation_team_application SET
+            team_name = #{teamName},
+            cooperative_enterprise = #{cooperativeEnterprise},
+            applicant_student_id = #{applicantStudentId},
+            applicant_name = #{applicantName},
+            applicant_contact = #{applicantContact},
+            on_campus_mentor_name = #{onCampusMentorName},
+            on_campus_mentor_contact = #{onCampusMentorContact},
+            enterprise_mentor_name = #{enterpriseMentorName},
+            enterprise_mentor_contact = #{enterpriseMentorContact},
+            innovation_direction = #{innovationDirection},
+            positioning_and_ideas = #{positioningAndIdeas},
+            applicant_signature = #{applicantSignature},
+            applicant_sign_date = #{applicantSignDate},
+            on_campus_mentor_signature = #{onCampusMentorSignature},
+            on_campus_mentor_sign_date = #{onCampusMentorSignDate},
+            enterprise_mentor_signature = #{enterpriseMentorSignature},
+            enterprise_mentor_sign_date = #{enterpriseMentorSignDate},
+            status = #{status},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM innovation_team_application WHERE id = #{id}
+    </delete>
+</mapper>

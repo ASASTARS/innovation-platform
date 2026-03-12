@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.SpaceReservationMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.SpaceReservation">
+        <id column="id" property="id"/>
+        <result column="space_id" property="spaceId"/>
+        <result column="custom_space_name" property="customSpaceName"/>
+        <result column="applicant_id" property="applicantId"/>
+        <result column="applicant_name" property="applicantName"/>
+        <result column="reservation_date" property="reservationDate"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="purpose" property="purpose"/>
+        <result column="attendee_count" property="attendeeCount"/>
+        <result column="contact_phone" property="contactPhone"/>
+        <result column="status" property="status"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="reviewer_id" property="reviewerId"/>
+        <result column="review_comment" property="reviewComment"/>
+        <result column="review_time" property="reviewTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM space_reservation WHERE id = #{id}
+    </select>
+
+    <select id="selectByApplicantId" resultMap="BaseResultMap">
+        SELECT * FROM space_reservation WHERE applicant_id = #{applicantId} ORDER BY reservation_date DESC, start_time DESC
+    </select>
+
+    <select id="selectBySpaceId" resultMap="BaseResultMap">
+        SELECT * FROM space_reservation WHERE space_id = #{spaceId} ORDER BY reservation_date DESC, start_time DESC
+    </select>
+
+    <select id="selectBySpaceAndTime" resultMap="BaseResultMap">
+        SELECT * FROM space_reservation
+        WHERE space_id = #{spaceId}
+          AND reservation_date = #{reservationDate}
+          AND status != 'CANCELLED'
+          AND status != 'REJECTED'
+          AND (
+            (start_time &lt;= #{startTime} AND end_time &gt; #{startTime})
+            OR (start_time &lt; #{endTime} AND end_time &gt;= #{endTime})
+            OR (start_time &gt;= #{startTime} AND end_time &lt;= #{endTime})
+          )
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM space_reservation WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM space_reservation ORDER BY reservation_date DESC, start_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO space_reservation (
+            space_id, custom_space_name, applicant_id, applicant_name, reservation_date, start_time, end_time,
+            purpose, attendee_count, contact_phone, status, approval_status,
+            create_time, update_time
+        ) VALUES (
+            #{spaceId}, #{customSpaceName}, #{applicantId}, #{applicantName}, #{reservationDate}, #{startTime}, #{endTime},
+            #{purpose}, #{attendeeCount}, #{contactPhone}, #{status}, #{approvalStatus},
+            #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE space_reservation
+        <set>
+            <if test="spaceId != null">space_id = #{spaceId},</if>
+            <if test="customSpaceName != null">custom_space_name = #{customSpaceName},</if>
+            <if test="reservationDate != null">reservation_date = #{reservationDate},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="purpose != null">purpose = #{purpose},</if>
+            <if test="attendeeCount != null">attendee_count = #{attendeeCount},</if>
+            <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="approvalStatus != null">approval_status = #{approvalStatus},</if>
+            <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
+            <if test="reviewComment != null">review_comment = #{reviewComment},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM space_reservation WHERE id = #{id}
+    </delete>
+</mapper>

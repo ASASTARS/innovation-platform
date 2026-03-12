@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.SpaceMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.Space">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="space_type_id" property="spaceTypeId"/>
+        <result column="location" property="location"/>
+        <result column="capacity" property="capacity"/>
+        <result column="facilities" property="facilities"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM space WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM space ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByTypeId" resultMap="BaseResultMap">
+        SELECT * FROM space WHERE space_type_id = #{spaceTypeId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM space WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO space (name, space_type_id, location, capacity, facilities, description, status, create_time, update_time)
+        VALUES (#{name}, #{spaceTypeId}, #{location}, #{capacity}, #{facilities}, #{description}, #{status}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="update">
+        UPDATE space
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="spaceTypeId != null">space_type_id = #{spaceTypeId},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="facilities != null">facilities = #{facilities},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM space WHERE id = #{id}
+    </delete>
+</mapper>

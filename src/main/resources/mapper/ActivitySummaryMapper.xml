@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.ActivitySummaryMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.ActivitySummary">
+        <id column="id" property="id"/>
+        <result column="activity_id" property="activityId"/>
+        <result column="actual_participants" property="actualParticipants"/>
+        <result column="summary_content" property="summaryContent"/>
+        <result column="achievements" property="achievements"/>
+        <result column="photos" property="photos"/>
+        <result column="attachments" property="attachments"/>
+        <result column="status" property="status"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="reviewer_id" property="reviewerId"/>
+        <result column="review_comment" property="reviewComment"/>
+        <result column="review_time" property="reviewTime"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_time" property="updateTime"/>
+    <result column="activity_title" property="activityTitle"/>
+</resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM activity_summary WHERE id = #{id}
+    </select>
+
+    <select id="selectByActivityId" resultMap="BaseResultMap">
+        SELECT * FROM activity_summary WHERE activity_id = #{activityId}
+    </select>
+
+    <select id="selectPageForAdmin" resultMap="BaseResultMap">
+        SELECT s.*, a.title AS activity_title
+        FROM activity_summary s
+        LEFT JOIN activity a ON s.activity_id = a.id
+        ORDER BY s.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countForAdmin" resultType="int">
+        SELECT COUNT(*) FROM activity_summary
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO activity_summary (
+            activity_id, actual_participants, summary_content, achievements, photos, attachments,
+            status, approval_status, create_time, update_time
+        ) VALUES (
+            #{activityId}, #{actualParticipants}, #{summaryContent}, #{achievements}, #{photos}, #{attachments},
+            #{status}, #{approvalStatus}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE activity_summary
+        <set>
+            <if test="actualParticipants != null">actual_participants = #{actualParticipants},</if>
+            <if test="summaryContent != null">summary_content = #{summaryContent},</if>
+            <if test="achievements != null">achievements = #{achievements},</if>
+            <if test="photos != null">photos = #{photos},</if>
+            <if test="attachments != null">attachments = #{attachments},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="approvalStatus != null">approval_status = #{approvalStatus},</if>
+            <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
+            <if test="reviewComment != null">review_comment = #{reviewComment},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM activity_summary WHERE id = #{id}
+    </delete>
+</mapper>

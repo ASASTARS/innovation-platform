@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.ProjectApplicationMapper">
+
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.ProjectApplication">
+        <id column="id" property="id"/>
+        <result column="application_no" property="applicationNo"/>
+        <result column="project_id" property="projectId"/>
+        <result column="project_title" property="projectTitle"/>
+        <result column="applicant_id" property="applicantId"/>
+        <result column="applicant_name" property="applicantName"/>
+        <result column="applicant_role" property="applicantRole"/>
+        <result column="application_type" property="applicationType"/>
+        <result column="application_content" property="applicationContent"/>
+        <result column="qualifications" property="qualifications"/>
+        <result column="contact_phone" property="contactPhone"/>
+        <result column="contact_email" property="contactEmail"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="approver_role" property="approverRole"/>
+        <result column="approver_id" property="approverId"/>
+        <result column="approver_name" property="approverName"/>
+        <result column="approval_time" property="approvalTime"/>
+        <result column="approval_comment" property="approvalComment"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT pa.*, p.title AS project_title
+        FROM project_application pa
+        LEFT JOIN project p ON pa.project_id = p.id
+        WHERE pa.id = #{id}
+    </select>
+
+    <select id="selectByProjectId" resultMap="BaseResultMap">
+        SELECT pa.*, p.title AS project_title
+        FROM project_application pa
+        LEFT JOIN project p ON pa.project_id = p.id
+        WHERE pa.project_id = #{projectId}
+        ORDER BY pa.create_time DESC
+    </select>
+
+    <select id="selectByApplicantId" resultMap="BaseResultMap">
+        SELECT pa.*, p.title AS project_title
+        FROM project_application pa
+        LEFT JOIN project p ON pa.project_id = p.id
+        WHERE pa.applicant_id = #{applicantId}
+        ORDER BY pa.create_time DESC
+    </select>
+
+    <select id="selectPendingApprovals" resultMap="BaseResultMap">
+        SELECT pa.*, p.title AS project_title
+        FROM project_application pa
+        LEFT JOIN project p ON pa.project_id = p.id
+        WHERE pa.approver_role = #{approverRole}
+          AND pa.approval_status = 'PENDING'
+          AND pa.status = 1
+        ORDER BY pa.create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO project_application (
+            application_no, project_id, project_title, applicant_id, applicant_name, applicant_role,
+            application_type, application_content, qualifications, contact_phone, contact_email,
+            approval_status, approver_role, status, create_time, update_time
+        ) VALUES (
+            #{applicationNo}, #{projectId}, #{projectTitle}, #{applicantId}, #{applicantName}, #{applicantRole},
+            #{applicationType}, #{applicationContent}, #{qualifications}, #{contactPhone}, #{contactEmail},
+            #{approvalStatus}, #{approverRole}, #{status}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE project_application
+        <set>
+            <if test="applicationContent != null">application_content = #{applicationContent},</if>
+            <if test="qualifications != null">qualifications = #{qualifications},</if>
+            <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
+            <if test="contactEmail != null">contact_email = #{contactEmail},</if>
+            <if test="approvalStatus != null">approval_status = #{approvalStatus},</if>
+            <if test="approverId != null">approver_id = #{approverId},</if>
+            <if test="approverName != null">approver_name = #{approverName},</if>
+            <if test="approverRole != null">approver_role = #{approverRole},</if>
+            <if test="approvalTime != null">approval_time = #{approvalTime},</if>
+            <if test="approvalComment != null">approval_comment = #{approvalComment},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = #{updateTime}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM project_application WHERE id = #{id}
+    </delete>
+
+</mapper>

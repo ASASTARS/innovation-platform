@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abajin.innovation.mapper.TeamMemberMapper">
+    <resultMap id="BaseResultMap" type="com.abajin.innovation.entity.TeamMember">
+        <id column="id" property="id"/>
+        <result column="team_id" property="teamId"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="role" property="role"/>
+        <result column="status" property="status"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="join_time" property="joinTime"/>
+        <result column="student_id" property="studentId"/>
+        <result column="grade" property="grade"/>
+        <result column="major" property="major"/>
+        <result column="competition_experience" property="competitionExperience"/>
+        <result column="awards" property="awards"/>
+        <result column="contact_phone" property="contactPhone"/>
+        <result column="resume_attachment" property="resumeAttachment"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM team_member WHERE id = #{id}
+    </select>
+
+    <select id="selectByTeamId" resultMap="BaseResultMap">
+        SELECT * FROM team_member WHERE team_id = #{teamId} ORDER BY join_time ASC
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM team_member WHERE user_id = #{userId} ORDER BY join_time DESC
+    </select>
+
+    <select id="selectByTeamIdAndUserId" resultMap="BaseResultMap">
+        SELECT * FROM team_member WHERE team_id = #{teamId} AND user_id = #{userId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO team_member (team_id, user_id, user_name, role, status, approval_status, join_time, student_id, grade, major, competition_experience, awards, contact_phone, resume_attachment)
+        VALUES (#{teamId}, #{userId}, #{userName}, #{role}, COALESCE(#{status}, 'ACTIVE'), COALESCE(#{approvalStatus}, 'APPROVED'), #{joinTime}, #{studentId}, #{grade}, #{major}, #{competitionExperience}, #{awards}, #{contactPhone}, #{resumeAttachment})
+    </insert>
+
+    <update id="update">
+        UPDATE team_member
+        <set>
+            <if test="userName != null">user_name = #{userName},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="approvalStatus != null">approval_status = #{approvalStatus},</if>
+            <if test="joinTime != null">join_time = #{joinTime},</if>
+            <if test="studentId != null">student_id = #{studentId},</if>
+            <if test="grade != null">grade = #{grade},</if>
+            <if test="major != null">major = #{major},</if>
+            <if test="competitionExperience != null">competition_experience = #{competitionExperience},</if>
+            <if test="awards != null">awards = #{awards},</if>
+            <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
+            <if test="resumeAttachment != null">resume_attachment = #{resumeAttachment},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM team_member WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByTeamIdAndUserId">
+        DELETE FROM team_member WHERE team_id = #{teamId} AND user_id = #{userId}
+    </delete>
+</mapper>
