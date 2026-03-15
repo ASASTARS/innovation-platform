@@ -24,7 +24,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         java-version: '17'
-        distribution: 'temurxiin'
+        distribution: 'microsoft'
         cache: maven # 自动缓存 Maven 依赖，加快后续构建速度
 
     # 执行 Maven 命令进行编译和打包
