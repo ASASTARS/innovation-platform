@@ -114,7 +114,7 @@ curl -O https://raw.githubusercontent.com/your-username/innovation-backend/main/
 curl -O https://raw.githubusercontent.com/your-username/innovation-backend/main/nginx.conf
 
 # 重命名
-cp docker-compose.prod.yml docker-compose.yml
+cp docker-compose.yml docker-compose.yml
 ```
 
 ### 4.2 首次启动

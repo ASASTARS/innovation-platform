@@ -16,7 +16,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE_NAME: ${{ github.repository }}
+  BACKEND_IMAGE_NAME: ${{ github.repository }}-backend
   # 前端镜像名：将后端仓库名中的 -backend 替换为 -frontend
   FRONTEND_IMAGE_NAME: ${{ github.repository }}-frontend
 
