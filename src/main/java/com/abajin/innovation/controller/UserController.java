@@ -1,6 +1,9 @@
 package com.abajin.innovation.controller;
 
 import com.abajin.innovation.common.Result;
+import com.abajin.innovation.converter.LoginUserDTOConverter;
+import com.abajin.innovation.dto.LoginUserDTO;
+import com.abajin.innovation.entity.User;
 import com.abajin.innovation.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -8,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 /**
- * 当前用户相关接口（如修改密码）
+ * 当前用户相关接口（如修改密码、获取当前用户信息）
  */
 @RestController
 @RequestMapping("/users")
@@ -16,6 +19,24 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    /**
+     * 获取当前登录用户信息
+     * GET /api/users/me
+     * 用于页面刷新后恢复用户信息和角色
+     */
+    @GetMapping("/me")
+    public Result<LoginUserDTO> getCurrentUser(@RequestAttribute("userId") Long userId) {
+        try {
+            User user = userService.getUserById(userId);
+            if (user == null) {
+                return Result.error("用户不存在");
+            }
+            return Result.success(LoginUserDTOConverter.convert(user));
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
 
     /**
      * 修改当前用户密码

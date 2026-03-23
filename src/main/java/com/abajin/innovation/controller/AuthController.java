@@ -1,7 +1,9 @@
 package com.abajin.innovation.controller;
 
 import com.abajin.innovation.common.Result;
+import com.abajin.innovation.converter.LoginUserDTOConverter;
 import com.abajin.innovation.dto.LoginDTO;
+import com.abajin.innovation.dto.LoginUserDTO;
 import com.abajin.innovation.dto.RegisterDTO;
 import com.abajin.innovation.entity.User;
 import com.abajin.innovation.service.UserService;
@@ -23,11 +25,12 @@ public class AuthController {
         try {
             String token = userService.login(loginDTO);
             User user = userService.getUserByUsername(loginDTO.getUsername());
-            
+            LoginUserDTO userDTO = LoginUserDTOConverter.convert(user);
+
             Map<String, Object> data = new HashMap<>();
             data.put("token", token);
-            data.put("user", user);
-            
+            data.put("user", userDTO);
+
             return Result.success(data);
         } catch (Exception e) {
             return Result.error(e.getMessage());
