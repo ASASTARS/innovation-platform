@@ -129,7 +129,7 @@
             <artifactId>cas-client-core</artifactId>
             <version>3.2.1</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/cas-client-core-3.2.1.jar</systemPath>
+            <systemPath>${project.basedir}/lib/cas-client-core-3.2.1.jar</systemPath>
         </dependency>
     </dependencies>
 
