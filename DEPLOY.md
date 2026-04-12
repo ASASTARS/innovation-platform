@@ -88,11 +88,6 @@ cat > .env << 'EOF'
 MYSQL_ROOT_PASSWORD=your-secure-password
 MYSQL_USER=root
 
-# MinIO 配置（如果使用）
-MINIO_URL=http://your-minio-server:9000
-MINIO_ACCESS_KEY=your-access-key
-MINIO_SECRET_KEY=your-secret-key
-
 # JWT 配置
 JWT_SECRET=your-jwt-secret-key-change-this
 JWT_EXPIRATION=86400000
