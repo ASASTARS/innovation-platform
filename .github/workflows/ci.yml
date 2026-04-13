@@ -17,11 +17,11 @@ jobs:
     steps:
     # 把你的代码拉取到 GitHub 的虚拟机里
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v5
 
     # 在虚拟机里安装并配置 Java 环境 (这里以 JDK 17 为例)
     - name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'microsoft'
