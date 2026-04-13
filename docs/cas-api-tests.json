@@ -1,0 +1,282 @@
+{
+  "info": {
+    "_postman_id": "cas-integration-tests",
+    "name": "CAS Integration Tests",
+    "description": "CAS统一身份认证API测试集合",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. 获取CAS状态",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/cas/status",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "cas", "status"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('CAS is enabled', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.enabled).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. CAS登录（获取重定向）",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/cas/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "cas", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 302', function () {",
+              "    pm.response.to.have.status(302);",
+              "});",
+              "",
+              "pm.test('Contains ticket in redirect', function () {",
+              "    var location = pm.response.headers.get('Location');",
+              "    pm.expect(location).to.contain('ticket=');",
+              "});",
+              "",
+              "// 提取ticket供后续使用",
+              "var location = pm.response.headers.get('Location');",
+              "var ticket = location.split('ticket=')[1];",
+              "pm.environment.set('cas_ticket', ticket);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. 验证Ticket（新用户场景）",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/cas/validate?ticket=MOCK-NEW-2021001-张三",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "cas", "validate"],
+          "query": [
+            {
+              "key": "ticket",
+              "value": "MOCK-NEW-2021001-张三"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 302', function () {",
+              "    pm.response.to.have.status(302);",
+              "});",
+              "",
+              "pm.test('Redirects to complete-profile', function () {",
+              "    var location = pm.response.headers.get('Location');",
+              "    pm.expect(location).to.contain('/complete-profile');",
+              "    pm.expect(location).to.contain('token=');",
+              "});",
+              "",
+              "// 提取token",
+              "var location = pm.response.headers.get('Location');",
+              "var token = location.split('token=')[1].split('&')[0];",
+              "pm.environment.set('auth_token', decodeURIComponent(token));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 获取当前用户信息",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/users/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "users", "me"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('User data is correct', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.username).to.exist;",
+              "    pm.expect(jsonData.data.realName).to.exist;",
+              "    pm.expect(jsonData.data.role).to.be.oneOf(['STUDENT', 'TEACHER']);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. 完善用户资料",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"test@example.com\",\n    \"phone\": \"13800138000\",\n    \"collegeId\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/cas/complete-profile",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "cas", "complete-profile"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Profile completion successful', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.profileComplete).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. 验证合并场景",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/cas/validate?ticket=MOCK-MERGE-2021001-张三",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "cas", "validate"],
+          "query": [
+            {
+              "key": "ticket",
+              "value": "MOCK-MERGE-2021001-张三"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 302', function () {",
+              "    pm.response.to.have.status(302);",
+              "});",
+              "",
+              "pm.test('Redirects to cas-merge', function () {",
+              "    var location = pm.response.headers.get('Location');",
+              "    pm.expect(location).to.contain('/cas-merge');",
+              "    pm.expect(location).to.contain('data=');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. 执行账号合并",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"casUid\": \"2021001\",\n    \"realName\": \"张三\",\n    \"password\": \"correct_password\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/cas/merge",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "cas", "merge"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Merge successful', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.code).to.eql(200);",
+              "    pm.expect(jsonData.data.token).to.exist;",
+              "    pm.expect(jsonData.data.user.authType).to.eql('BOTH');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}
