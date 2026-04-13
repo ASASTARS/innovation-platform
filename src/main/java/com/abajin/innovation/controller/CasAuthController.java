@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +66,6 @@ public class CasAuthController {
 
         // Mock模式：直接重定向到前端回调页面，带上mock ticket
         if (casConfig.getMockMode()) {
-            // 使用拼音避免中文编码问题
             String mockTicket = "MOCK-2021001-ZhangSan";
             String redirectUrl = casConfig.getClientHostUrl().replace("/api", "") + 
                 "/cas-callback?ticket=" + mockTicket;
@@ -74,7 +74,7 @@ public class CasAuthController {
             return;
         }
 
-        // 构造回调地址
+        // 构造回调地址（后端验证接口）
         String serviceUrl = casConfig.getClientHostUrl() + "/auth/cas/validate";
         String encodedServiceUrl = URLEncoder.encode(serviceUrl, StandardCharsets.UTF_8);
 
@@ -87,37 +87,88 @@ public class CasAuthController {
     /**
      * CAS回调验证ticket
      * CAS服务器会重定向到这个地址，并携带ticket参数
+     * 验证成功后重定向到前端页面
      */
     @GetMapping("/validate")
-    public Result<CasLoginResponse> validate(@RequestParam("ticket") String ticket) {
+    public void validate(
+            @RequestParam("ticket") String ticket,
+            HttpServletResponse response) throws IOException {
         log.info("[CAS] 收到ticket验证请求");
+        
+        // 前端基础地址（移除 /api 后缀）
+        String frontendBaseUrl = casConfig.getClientHostUrl().replace("/api", "");
+        
         try {
             if (!casService.isCasEnabled()) {
                 log.warn("[CAS] 功能未启用");
-                return Result.error("CAS功能未启用");
+                response.sendRedirect(frontendBaseUrl + "/login?error=cas_disabled");
+                return;
             }
 
             // 构造service URL（必须与login时的一致）
             String serviceUrl = casConfig.getClientHostUrl() + "/auth/cas/validate";
 
             // 验证ticket并处理登录
-            CasLoginResponse response = casService.validateTicketAndLogin(ticket, serviceUrl);
+            CasLoginResponse casResponse = casService.validateTicketAndLogin(ticket, serviceUrl);
             
-            if (response.getNeedMerge() != null && response.getNeedMerge()) {
+            // 处理需要合并账号的情况
+            if (casResponse.getNeedMerge() != null && casResponse.getNeedMerge()) {
                 log.info("[CAS] 检测到同名账号，需要合并: casUid={}, realName={}", 
-                    response.getCasUid(), response.getCasName());
-            } else if (response.getNeedCompleteProfile() != null && response.getNeedCompleteProfile()) {
-                log.info("[CAS] 新用户登录，需要完善资料: userId={}", 
-                    response.getUser() != null ? response.getUser().getId() : "unknown");
-            } else {
-                log.info("[CAS] 用户登录成功: userId={}", 
-                    response.getUser() != null ? response.getUser().getId() : "unknown");
+                    casResponse.getCasUid(), casResponse.getCasName());
+                
+                // 将合并信息编码后传给前端
+                String mergeData = Base64.getUrlEncoder().encodeToString(
+                    String.format("{\"casUid\":\"%s\",\"casName\":\"%s\",\"duplicateAccount\":{\"username\":\"%s\",\"realName\":\"%s\",\"role\":\"%s\"}}",
+                        casResponse.getCasUid(),
+                        casResponse.getCasName(),
+                        casResponse.getDuplicateAccount() != null ? casResponse.getDuplicateAccount().getUsername() : "",
+                        casResponse.getDuplicateAccount() != null ? casResponse.getDuplicateAccount().getRealName() : casResponse.getCasName(),
+                        casResponse.getDuplicateAccount() != null ? casResponse.getDuplicateAccount().getRole() : "STUDENT"
+                    ).getBytes(StandardCharsets.UTF_8)
+                );
+                response.sendRedirect(frontendBaseUrl + "/cas-merge?data=" + mergeData);
+                return;
             }
-
-            return Result.success(response);
+            
+            // 处理需要完善资料的情况
+            if (casResponse.getNeedCompleteProfile() != null && casResponse.getNeedCompleteProfile()) {
+                log.info("[CAS] 新用户登录，需要完善资料: userId={}", 
+                    casResponse.getUser() != null ? casResponse.getUser().getId() : "unknown");
+                
+                // 将token传给前端（完善资料页面需要token进行认证）
+                response.sendRedirect(frontendBaseUrl + "/complete-profile?token=" + 
+                    URLEncoder.encode(casResponse.getToken(), StandardCharsets.UTF_8));
+                return;
+            }
+            
+            // 正常登录成功
+            log.info("[CAS] 用户登录成功: userId={}", 
+                casResponse.getUser() != null ? casResponse.getUser().getId() : "unknown");
+            
+            // 将token传给前端回调页面
+            response.sendRedirect(frontendBaseUrl + "/cas-callback?ticket=success&token=" + 
+                URLEncoder.encode(casResponse.getToken(), StandardCharsets.UTF_8));
+            
         } catch (Exception e) {
-            log.error("[CAS] 登录失败: {}", e.getMessage(), e);
-            return Result.error("CAS登录失败: " + e.getMessage());
+            String errorMsg = e.getMessage();
+            log.error("[CAS] 登录失败: {}", errorMsg, e);
+            
+            // 优化错误信息，使其更友好
+            String friendlyError;
+            if (errorMsg == null) {
+                friendlyError = "未知错误";
+            } else if (errorMsg.contains("ticket验证失败")) {
+                friendlyError = "认证票据验证失败，请重试";
+            } else if (errorMsg.contains("SSL") || errorMsg.contains("证书")) {
+                friendlyError = "无法建立安全连接，请检查网络或联系管理员";
+            } else if (errorMsg.contains("账户已被禁用")) {
+                friendlyError = "账户已被禁用，请联系管理员";
+            } else {
+                friendlyError = errorMsg;
+            }
+            
+            response.sendRedirect(frontendBaseUrl + "/login-error?error=" + 
+                URLEncoder.encode(friendlyError, StandardCharsets.UTF_8));
         }
     }
 
@@ -194,7 +245,7 @@ public class CasAuthController {
                 return Result.error("无效的认证头");
             }
             
-            String token = authHeader.substring(7); // 移除 "Bearer "
+            String token = authHeader.substring(7);
             Long userId = jwtUtil.getUserIdFromToken(token);
 
             if (userId == null) {
@@ -205,7 +256,6 @@ public class CasAuthController {
             
             log.info("[CAS] 资料完善成功: userId={}", userId);
             
-            // 返回更新后的用户信息
             Map<String, Object> result = new HashMap<>();
             result.put("message", "资料完善成功");
             result.put("profileComplete", true);
@@ -236,10 +286,8 @@ public class CasAuthController {
                 return Result.error("无效的token");
             }
 
-            // 获取用户信息检查是否需要完善资料
             Map<String, Object> result = new HashMap<>();
-            // 这里可以通过UserService查询用户信息
-            result.put("needComplete", false); // 默认值，实际需要查询数据库
+            result.put("needComplete", false);
             
             return Result.success(result);
 
@@ -257,8 +305,6 @@ public class CasAuthController {
     public Result<Void> casLogout(@RequestBody(required = false) Map<String, String> body) {
         log.info("[CAS] 收到单点登出请求");
         try {
-            // 这里可以实现token黑名单等登出逻辑
-            // 实际实现中可能需要将token加入黑名单
             return Result.success("登出成功", null);
         } catch (Exception e) {
             log.error("[CAS] 登出处理失败: {}", e.getMessage());
